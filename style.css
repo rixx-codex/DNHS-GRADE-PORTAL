@@ -1,5 +1,5 @@
 /* DNHS Grade Portal - CLAYMORPHISM + REALISTIC DESIGN
-   Programmer: James Riq Londonio
+   Developer: Pixe Codex
    Theme: Premium Claymorphism with Realistic Materials & Lighting
 */
 
@@ -54,7 +54,7 @@
 }
 
 body {
-    background: linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(30, 41, 59, 0.9)), url('admin-bg.jpg');
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(30, 41, 59, 0.9)), url('bg-image.png');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
