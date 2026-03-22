@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DNHS ADMIN</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="admin-import-styles.css"> 
+</head>
+<body>
+
+    <!-- Login Section (show by default, hidden by JS if logged in) -->
+    <div id="adminLoginSection" class="login-overlay">
+        <div class="login-container">
+            <div class="login-header">
+                <img src="dnhs-logo.jpg" class="login-logo">
+                <h1>DNHS ADMIN</h1>
+                <p>Grade Portal Management</p>
+            </div>
+            <form onsubmit="event.preventDefault(); handleAdminLogin();">
+                <div class="input-group">
+                    <i class="fa-solid fa-envelope"></i>
+                    <input type="email" id="adminEmail" placeholder="Email Address" required>
+                </div>
+                <div class="input-group">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="adminPassword" placeholder="Password" required>
+                    <i class="fa-solid fa-eye" id="eyeIcon" onclick="togglePasswordVisibility()"></i>
+                </div>
+                <div id="loginError" class="error-message"></div>
+                <button type="submit" id="loginBtn" class="login-btn">SIGN IN</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Admin Section (Hidden until logged in) -->
+    <div id="encoderSection" class="hidden">
+
+    <div class="burger-nav" onclick="toggleSidebar()">
+        <div class="burger-icon">
+            <span></span><span></span><span></span>
+        </div>
+        <div class="burger-ripple"></div>
+    </div>
+
+    <div id="sidebarOverlay" class="sidebar-overlay hidden" onclick="toggleSidebar()"></div>
+    <div id="sidebar" class="sidebar hidden">
+        <div class="sidebar-header">
+            <div class="logo-container">
+                <div class="logo-ring"></div>
+                <div class="logo-ring-2"></div>
+                <img src="dnhs-logo.jpg" id="adminNavLogo" class="nav-logo">
+                <div class="logo-glow"></div>
+            </div>
+            <h3>ADMIN PANEL</h3>
+            <div class="admin-badge">ADMIN</div>
+        </div>
+        <ul class="nav-links">
+            <li onclick="showSection('grading')" class="active" data-section="grading">
+                <span class="nav-indicator"></span>
+                <i class="fa-solid fa-graduation-cap"></i>
+                <span class="nav-text">Grading System</span>
+                <span class="nav-arrow"><i class="fa-solid fa-chevron-right"></i></span>
+            </li>
+            <li onclick="showSection('import')" data-section="import">
+                <span class="nav-indicator"></span>
+                <i class="fa-solid fa-file-import"></i>
+                <span class="nav-text">Import Grades</span>
+                <span class="nav-arrow"><i class="fa-solid fa-chevron-right"></i></span>
+            </li>
+            <li onclick="showSection('subjects')" data-section="subjects">
+                <span class="nav-indicator"></span>
+                <i class="fa-solid fa-book-open"></i>
+                <span class="nav-text">Change Subjects</span>
+                <span class="nav-arrow"><i class="fa-solid fa-chevron-right"></i></span>
+            </li>
+            <li onclick="showSection('semester')" data-section="semester">
+                <span class="nav-indicator"></span>
+                <i class="fa-solid fa-calendar-alt"></i>
+                <span class="nav-text">Change Semester</span>
+                <span class="nav-arrow"><i class="fa-solid fa-chevron-right"></i></span>
+            </li>
+            <li onclick="showSection('account')" data-section="account">
+                <span class="nav-indicator"></span>
+                <i class="fa-solid fa-user-gear"></i>
+                <span class="nav-text">Account Settings</span>
+                <span class="nav-arrow"><i class="fa-solid fa-chevron-right"></i></span>
+            </li>
+            <li onclick="toggleDarkMode()" data-section="darkmode" class="darkmode-toggle">
+                <span class="nav-indicator"></span>
+                <i class="fa-solid fa-moon" id="darkModeIcon"></i>
+                <span class="nav-text">Dark Mode</span>
+                <span class="nav-arrow"><i class="fa-solid fa-chevron-right"></i></span>
+            </li>
+            <li onclick="handleLogout()" class="nav-logout" data-section="logout">
+                <span class="nav-indicator"></span>
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span class="nav-text">Logout</span>
+                <span class="nav-arrow"><i class="fa-solid fa-chevron-right"></i></span>
+            </li>
+        </ul>
+    </div>
+
+    <main class="admin-container">
+        
+        <!-- Import Grades Section -->
+        <div id="importSection" class="clay-tab hidden">
+            <div class="clay-card">
+                <h3><i class="fa-solid fa-file-import"></i> IMPORT GRADES FROM CSV</h3>
+                <p class="import-instructions">
+                    Upload a CSV file with columns: student_name, access_code (LRN), CSS, IMMERSION, CPAR, 3IS, P.R-2, ENTREP, 21ST CENTURY
+                </p>
+                <div class="import-drop-zone" id="dropZone">
+                    <i class="fa-solid fa-cloud-upload-alt"></i>
+                    <p>Drag & drop CSV file here or click to browse</p>
+                    <input type="file" id="csvFileInput" accept=".csv" style="display:none">
+                </div>
+                <div id="importPreview" class="import-preview hidden">
+                    <h4>Preview (<span id="previewCount">0</span> rows)</h4>
+                    <div class="preview-table-wrapper">
+                        <table id="previewTable" class="preview-table">
+                            <thead></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="import-actions">
+                    <button id="importBtn" class="btn-clay btn-save hidden" onclick="importGrades()">
+                        <i class="fa-solid fa-upload"></i> IMPORT GRADES
+                    </button>
+                    <button id="cancelImportBtn" class="btn-clay btn-delete hidden" onclick="cancelImport()">CANCEL</button>
+                </div>
+                <div id="importProgress" class="import-progress hidden">
+                    <div class="progress-bar">
+                        <div id="progressFill" class="progress-fill"></div>
+                    </div>
+                    <p id="progressText">Importing...</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="gradingSection" class="clay-tab">
+            <div class="clay-card-header">
+                <h2>STUDENT GRADING</h2>
+                <div class="search-bar-clay">
+                    <input type="number" id="searchLrn" placeholder="Retrieve via LRN">
+                    <button class="btn-clay btn-small btn-save" onclick="searchToEdit()"><i class="fa-solid fa-magnifying-glass"></i></button>
+                </div>
+            </div>
+
+            <div class="clay-card">
+                <div class="input-grid">
+                    <div class="field">
+                        <label>Student Full Name</label>
+                        <input type="text" id="studentName" placeholder="Full Name">
+                    </div>
+                    <div class="field">
+                        <label>LRN (Access Code)</label>
+                        <input type="number" id="accessCode" placeholder="LRN Number">
+                    </div>
+                </div>
+
+                <div class="subjects-clay-grid" id="gradingInputs">
+                    </div>
+
+                <div class="average-display-clay">
+                    <label>General Average</label>
+                    <input type="text" id="genAve" readonly placeholder="--">
+                </div>
+
+                <div class="action-buttons">
+                    <button id="uploadBtn" class="btn-clay btn-save" onclick="handleUpload()">SAVE STUDENT RECORD</button>
+                    <button id="deleteBtn" class="btn-clay btn-delete hidden btn-small" onclick="handleDelete()">DELETE</button>
+                    <button class="btn-clay btn-clear btn-small" onclick="clearForm()">CLEAR</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="subjectsSection" class="clay-tab hidden">
+            <div class="clay-card">
+                <h3><i class="fa-solid fa-edit"></i> EDIT SUBJECT NAMES</h3>
+                <div id="subjectLabelInputs" class="input-column">
+                    </div>
+                <button class="btn-clay btn-save" onclick="saveSubjectSettings()">UPDATE SUBJECTS</button>
+            </div>
+        </div>
+
+        <div id="semesterSection" class="clay-tab hidden">
+            <div class="clay-card">
+                <h3><i class="fa-solid fa-clock"></i> ACTIVE SEMESTER</h3>
+                <div class="sem-toggle-group">
+                    <button class="sem-opt" id="sem1" onclick="setActiveSem('1st Semester')">1ST SEMESTER</button>
+                    <button class="sem-opt" id="sem2" onclick="setActiveSem('2nd Semester')">2ND SEMESTER</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Settings Section -->
+        <div id="accountSection" class="clay-tab hidden">
+            <div class="clay-card">
+                <h3><i class="fa-solid fa-user-gear"></i> ACCOUNT SETTINGS</h3>
+                
+                <div class="account-info">
+                    <div class="info-row">
+                        <span class="info-label">Logged in as:</span>
+                        <span class="info-value" id="adminEmailDisplay">--</span>
+                    </div>
+                </div>
+
+                <div class="password-change-form">
+                    <h4>Change Password</h4>
+                    <div class="field">
+                        <label>New Password</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="newPassword" placeholder="Enter new password">
+                            <i class="fa-solid fa-eye" onclick="togglePasswordField('newPassword', this)"></i>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Confirm Password</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="confirmPassword" placeholder="Confirm new password">
+                            <i class="fa-solid fa-eye" onclick="togglePasswordField('confirmPassword', this)"></i>
+                        </div>
+                    </div>
+                    <button class="btn-clay btn-save" onclick="changePassword()">CHANGE PASSWORD</button>
+                </div>
+            </div>
+        </div>
+    </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
+    <script src="auth.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
